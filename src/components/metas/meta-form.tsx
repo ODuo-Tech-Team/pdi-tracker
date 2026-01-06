@@ -68,7 +68,8 @@ export function MetaForm({ goal, onSuccess, onCancel }: MetaFormProps) {
         .single()
 
       if (error) {
-        toast.error('Erro ao atualizar meta')
+        console.error('Error updating goal:', error)
+        toast.error(`Erro ao atualizar meta: ${error.message}`)
         setLoading(false)
         return
       }
@@ -83,7 +84,8 @@ export function MetaForm({ goal, onSuccess, onCancel }: MetaFormProps) {
         .single()
 
       if (error) {
-        toast.error('Erro ao criar meta')
+        console.error('Error creating goal:', error)
+        toast.error(`Erro ao criar meta: ${error.message}`)
         setLoading(false)
         return
       }

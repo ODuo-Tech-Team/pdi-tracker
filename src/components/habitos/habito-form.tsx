@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Habit, HabitType, HABIT_TYPE_LABELS, WEEKDAY_LABELS } from '@/types/database'
+import { Habit, HabitType, HABIT_TYPE_LABELS } from '@/types/database'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -91,7 +91,8 @@ export function HabitoForm({ habit, onSuccess, onCancel }: HabitoFormProps) {
         .single()
 
       if (error) {
-        toast.error('Erro ao atualizar hábito')
+        console.error('Error updating habit:', error)
+        toast.error(`Erro ao atualizar hábito: ${error.message}`)
         setLoading(false)
         return
       }
@@ -106,7 +107,8 @@ export function HabitoForm({ habit, onSuccess, onCancel }: HabitoFormProps) {
         .single()
 
       if (error) {
-        toast.error('Erro ao criar hábito')
+        console.error('Error creating habit:', error)
+        toast.error(`Erro ao criar hábito: ${error.message}`)
         setLoading(false)
         return
       }
