@@ -44,7 +44,7 @@ export default async function EquipePage() {
       <Header profile={profile} title="Minha Equipe" />
 
       <div className="p-6">
-        <EquipeList teamMembers={teamMembers} />
+        <EquipeList teamMembers={teamMembers} managerName={profile?.name || 'Gestor'} />
       </div>
     </div>
   )

@@ -24,7 +24,7 @@ interface EquipeListProps {
   managerName: string
 }
 
-export function EquipeList({ teamMembers }: EquipeListProps) {
+export function EquipeList({ teamMembers, managerName }: EquipeListProps) {
   if (teamMembers.length === 0) {
     return (
       <Card className="border-0 shadow-sm">
@@ -59,8 +59,46 @@ export function EquipeList({ teamMembers }: EquipeListProps) {
     0
   )
 
+  const handleExportTeamPDF = () => {
+    exportTeamToPDF(teamMembers, managerName)
+  }
+
+  const handleExportTeamExcel = () => {
+    exportTeamToExcel(teamMembers, managerName)
+  }
+
+  const handleExportMemberPDF = (member: TeamMember) => {
+    exportMemberToPDF(member)
+  }
+
   return (
     <div className="space-y-6">
+      {/* Export Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Visão Geral da Equipe</h2>
+          <p className="text-sm text-gray-500">{teamMembers.length} colaboradores</p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Exportar Relatório
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportTeamPDF} className="flex items-center gap-2 cursor-pointer">
+              <FileText className="h-4 w-4 text-red-500" />
+              Exportar PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportTeamExcel} className="flex items-center gap-2 cursor-pointer">
+              <FileSpreadsheet className="h-4 w-4 text-green-500" />
+              Exportar Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Team Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm">
@@ -149,12 +187,22 @@ export function EquipeList({ teamMembers }: EquipeListProps) {
                       <p className="text-sm text-gray-500">{member.email}</p>
                     </div>
                   </div>
-                  {memberOverdueGoals > 0 && (
-                    <Badge variant="destructive" className="flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      {memberOverdueGoals} atrasada{memberOverdueGoals > 1 ? 's' : ''}
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {memberOverdueGoals > 0 && (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        {memberOverdueGoals} atrasada{memberOverdueGoals > 1 ? 's' : ''}
+                      </Badge>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleExportMemberPDF(member)}
+                      title="Exportar PDF do colaborador"
+                    >
+                      <FileText className="h-4 w-4 text-gray-500" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
