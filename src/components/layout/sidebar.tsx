@@ -12,6 +12,8 @@ import {
   Settings,
   Trophy,
   LogOut,
+  Network,
+  ShieldCheck,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -29,6 +31,11 @@ const navItems = [
 
 const managerItems = [
   { href: '/dashboard/equipe', label: 'Minha Equipe', icon: Users },
+  { href: '/dashboard/organograma', label: 'Organograma', icon: Network },
+]
+
+const adminItems = [
+  { href: '/dashboard/admin', label: 'Administração', icon: ShieldCheck },
 ]
 
 const bottomItems = [
@@ -47,6 +54,7 @@ export function Sidebar({ profile }: SidebarProps) {
   }
 
   const isManager = profile?.role === 'gestor' || profile?.role === 'admin'
+  const isAdmin = profile?.role === 'admin'
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#043F8D] text-white flex flex-col">
@@ -90,6 +98,34 @@ export function Sidebar({ profile }: SidebarProps) {
               </span>
             </div>
             {managerItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
+                    isActive
+                      ? 'bg-[#F58300] text-white'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </Link>
+              )
+            })}
+          </>
+        )}
+
+        {isAdmin && (
+          <>
+            <div className="pt-4 pb-2 px-3">
+              <span className="text-xs font-semibold text-white/40 uppercase tracking-wider">
+                Admin
+              </span>
+            </div>
+            {adminItems.map((item) => {
               const isActive = pathname === item.href
               return (
                 <Link

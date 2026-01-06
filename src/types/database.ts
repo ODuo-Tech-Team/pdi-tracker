@@ -3,6 +3,7 @@ export type GoalStatus = 'not_started' | 'in_progress' | 'completed' | 'overdue'
 export type GoalCategory = 'profissional' | 'pessoal' | 'saude' | 'tecnico'
 export type GoalPriority = 'low' | 'medium' | 'high'
 export type HabitType = 'boolean' | 'counter' | 'time'
+export type NotificationType = 'goal_due_soon' | 'goal_overdue' | 'goal_completed' | 'streak_milestone' | 'team_update' | 'system'
 
 export interface Profile {
   id: string
@@ -11,6 +12,9 @@ export interface Profile {
   role: UserRole
   manager_id: string | null
   avatar_url: string | null
+  is_active: boolean
+  department: string | null
+  position: string | null
   created_at: string
   updated_at: string
 }
@@ -72,6 +76,34 @@ export interface Comment {
   created_at: string
 }
 
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message: string
+  link: string | null
+  is_read: boolean
+  related_goal_id: string | null
+  related_habit_id: string | null
+  related_user_id: string | null
+  created_at: string
+}
+
+export interface AdminStats {
+  total_users: number
+  total_admins: number
+  total_gestores: number
+  total_colaboradores: number
+  total_goals: number
+  completed_goals: number
+  overdue_goals: number
+  in_progress_goals: number
+  total_habits: number
+  total_achievements: number
+  avg_goal_progress: number
+}
+
 // Extended types with relations
 export interface HabitWithLogs extends Habit {
   habit_logs: HabitLog[]
@@ -88,6 +120,14 @@ export interface ProfileWithManager extends Profile {
 export interface TeamMember extends Profile {
   goals: Goal[]
   habits: Habit[]
+}
+
+export interface OrgChartNode extends Profile {
+  subordinates: OrgChartNode[]
+}
+
+export interface ProfileWithSubordinates extends Profile {
+  subordinates: Profile[]
 }
 
 // Database types for Supabase
@@ -203,6 +243,12 @@ export const PRIORITY_LABELS: Record<GoalPriority, string> = {
   low: 'Baixa',
   medium: 'Média',
   high: 'Alta',
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  admin: 'Administrador',
+  gestor: 'Gestor',
+  colaborador: 'Colaborador',
 }
 
 export const HABIT_TYPE_LABELS: Record<HabitType, string> = {

@@ -1,9 +1,9 @@
 'use client'
 
 import { Profile } from '@/types/database'
-import { Bell, Search } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { NotificationsBell } from './notifications-bell'
 
 interface HeaderProps {
   profile: Profile | null
@@ -31,10 +31,7 @@ export function Header({ profile, title }: HeaderProps) {
           </div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5 text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-[#F58300] rounded-full" />
-          </Button>
+          {profile && <NotificationsBell userId={profile.id} />}
 
           {/* User Avatar */}
           {profile && (

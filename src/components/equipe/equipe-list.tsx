@@ -3,9 +3,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
 import { Profile, Goal, Habit, STATUS_LABELS } from '@/types/database'
-import { Users, Target, Flame, AlertTriangle, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
+import { Users, Target, Flame, AlertTriangle, FileText, FileSpreadsheet, Download } from 'lucide-react'
+import { exportTeamToPDF, exportTeamToExcel, exportMemberToPDF } from '@/lib/export'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface TeamMember extends Profile {
   goals: Goal[]
@@ -14,6 +21,7 @@ interface TeamMember extends Profile {
 
 interface EquipeListProps {
   teamMembers: TeamMember[]
+  managerName: string
 }
 
 export function EquipeList({ teamMembers }: EquipeListProps) {
