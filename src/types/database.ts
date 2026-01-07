@@ -15,6 +15,7 @@ export interface Profile {
   is_active: boolean
   department: string | null
   position: string | null
+  area: string | null
   created_at: string
   updated_at: string
 }
@@ -275,6 +276,16 @@ export const WEEKDAY_LABELS: Record<string, string> = {
 export type OKRLevel = 'company' | 'area' | 'head' | 'individual'
 export type OKRStatus = 'draft' | 'pending_validation' | 'approved' | 'rejected' | 'tracking' | 'completed'
 export type AreaType = 'vendas' | 'marketing' | 'tech' | 'operacoes' | 'pessoas' | 'financeiro'
+export type DepartmentType = 'vendas' | 'marketing' | 'tech' | 'operacoes' | 'pessoas' | 'financeiro'
+
+export const DEPARTMENT_LABELS: Record<DepartmentType, string> = {
+  vendas: 'Vendas',
+  marketing: 'Marketing',
+  tech: 'Tech',
+  operacoes: 'Operações',
+  pessoas: 'Pessoas',
+  financeiro: 'Financeiro',
+}
 
 export interface OKRCycle {
   id: string
@@ -561,6 +572,7 @@ export interface KBCategory {
   slug: string
   description: string | null
   icon: string
+  color: string | null
   parent_id: string | null
   department: string | null
   sort_order: number
@@ -585,6 +597,9 @@ export interface KBArticle {
   is_featured: boolean
   department: string | null
   view_count: number
+  read_time_minutes: number | null
+  cover_image: string | null
+  tags: string[] | null
   published_at: string | null
   created_at: string
   updated_at: string
@@ -614,7 +629,7 @@ export interface KBBookmark {
   created_at: string
 }
 
-export interface KBArticleWithDetails extends KBArticle {
+export interface KBArticleWithDetails extends Omit<KBArticle, 'tags'> {
   author: Profile
   category: KBCategory | null
   tags: KBTag[]
