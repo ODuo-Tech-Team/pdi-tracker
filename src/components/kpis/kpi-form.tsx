@@ -89,7 +89,7 @@ export function KPIFormDialog({ open, onOpenChange, profile, objectives }: KPIFo
           target_value: targetValue ? parseFloat(targetValue) : null,
           current_value: 0,
           frequency,
-          linked_objective_id: linkedObjectiveId || null,
+          linked_objective_id: linkedObjectiveId && linkedObjectiveId !== 'none' ? linkedObjectiveId : null,
           is_active: true,
         })
 
@@ -226,7 +226,7 @@ export function KPIFormDialog({ open, onOpenChange, profile, objectives }: KPIFo
                   <SelectValue placeholder="Selecione um OKR" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {userAreaObjectives.length > 0 && (
                     <>
                       <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
