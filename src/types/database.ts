@@ -657,3 +657,120 @@ export interface InAppNotification {
   is_read: boolean
   created_at: string
 }
+
+// =====================================================
+// INTRANET TYPES - KPIs
+// =====================================================
+
+export type KPIMetricType = 'number' | 'percentage' | 'currency' | 'boolean'
+export type KPIFrequency = 'daily' | 'weekly' | 'monthly' | 'quarterly'
+
+export interface KPI {
+  id: string
+  title: string
+  description: string | null
+  owner_id: string | null
+  area: AreaType | null
+  metric_type: KPIMetricType
+  unit: string | null
+  target_value: number | null
+  current_value: number
+  frequency: KPIFrequency
+  linked_objective_id: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface KPIValue {
+  id: string
+  kpi_id: string
+  value: number
+  recorded_at: string
+  notes: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export interface KPIWithValues extends KPI {
+  values: KPIValue[]
+  owner?: Profile
+  linked_objective?: Objective
+}
+
+export const KPI_FREQUENCY_LABELS: Record<KPIFrequency, string> = {
+  daily: 'Diario',
+  weekly: 'Semanal',
+  monthly: 'Mensal',
+  quarterly: 'Trimestral',
+}
+
+export const KPI_METRIC_TYPE_LABELS: Record<KPIMetricType, string> = {
+  number: 'Numero',
+  percentage: 'Percentual',
+  currency: 'Valor (R$)',
+  boolean: 'Sim/Nao',
+}
+
+// =====================================================
+// INTRANET TYPES - COMENTARIOS E ANEXOS GENERICOS
+// =====================================================
+
+export type EntityType = 'objective' | 'key_result' | 'kpi' | 'comment'
+export type ActivityAction = 'created' | 'updated' | 'checked_in' | 'commented' | 'deleted' | 'approved' | 'rejected'
+
+export interface GenericComment {
+  id: string
+  entity_type: EntityType
+  entity_id: string
+  author_id: string
+  content: string
+  parent_comment_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface GenericCommentWithAuthor extends GenericComment {
+  author: Profile
+  replies?: GenericCommentWithAuthor[]
+}
+
+export interface Attachment {
+  id: string
+  entity_type: EntityType
+  entity_id: string
+  file_name: string
+  file_url: string
+  file_size: number | null
+  mime_type: string | null
+  uploaded_by: string | null
+  created_at: string
+}
+
+export interface AttachmentWithUploader extends Attachment {
+  uploader?: Profile
+}
+
+export interface Activity {
+  id: string
+  entity_type: EntityType
+  entity_id: string
+  action: ActivityAction
+  actor_id: string | null
+  metadata: Record<string, unknown> | null
+  created_at: string
+}
+
+export interface ActivityWithActor extends Activity {
+  actor?: Profile
+}
+
+export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
+  created: 'criou',
+  updated: 'atualizou',
+  checked_in: 'fez check-in em',
+  commented: 'comentou em',
+  deleted: 'excluiu',
+  approved: 'aprovou',
+  rejected: 'rejeitou',
+}

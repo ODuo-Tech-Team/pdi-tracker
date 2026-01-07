@@ -20,6 +20,7 @@ import {
   Calendar,
   Users2,
   BookOpen,
+  BarChart3,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -31,6 +32,7 @@ interface SidebarProps {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/okrs', label: 'OKRs', icon: Crosshair },
+  { href: '/dashboard/kpis', label: 'KPIs', icon: BarChart3 },
   { href: '/dashboard/metas', label: 'Metas', icon: Target },
   { href: '/dashboard/habitos', label: 'Hábitos', icon: CalendarCheck },
   { href: '/dashboard/conquistas', label: 'Conquistas', icon: Trophy },
