@@ -1,8 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
-import { AdminStats } from '@/components/admin/admin-stats'
-import { UsersTable } from '@/components/admin/users-table'
+import { AdminPanel } from '@/components/admin/admin-panel'
 import { Profile } from '@/types/database'
 
 export default async function AdminPage() {
@@ -45,6 +44,9 @@ export default async function AdminPage() {
     total_colaboradores: users.filter(u => u.role === 'colaborador').length,
     active_users: users.filter(u => u.is_active !== false).length,
     inactive_users: users.filter(u => u.is_active === false).length,
+    total_goals: 0,
+    completed_goals: 0,
+    total_habits: 0,
   }
 
   // Get goals and habits counts
@@ -62,20 +64,21 @@ export default async function AdminPage() {
     .select('*', { count: 'exact', head: true })
     .eq('is_active', true)
 
-  const extendedStats = {
-    ...stats,
-    total_goals: goalsCount || 0,
-    completed_goals: completedGoalsCount || 0,
-    total_habits: habitsCount || 0,
-  }
+  stats.total_goals = goalsCount || 0
+  stats.completed_goals = completedGoalsCount || 0
+  stats.total_habits = habitsCount || 0
 
   return (
-    <div className="min-h-screen">
-      <Header profile={profile} title="Administração" />
+    <div className="min-h-screen bg-gray-50">
+      <Header profile={profile} title="Painel Administrativo" />
 
-      <div className="p-6 space-y-6">
-        <AdminStats stats={extendedStats} />
-        <UsersTable users={users} managers={managers} currentUserId={user.id} />
+      <div className="p-6">
+        <AdminPanel
+          users={users}
+          managers={managers}
+          currentUserId={user.id}
+          stats={stats}
+        />
       </div>
     </div>
   )
