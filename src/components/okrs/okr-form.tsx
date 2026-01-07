@@ -99,9 +99,9 @@ export function OKRForm({ profile, activeCycle, areaOKRs }: OKRFormProps) {
       return
     }
 
-    const validKRs = keyResults.filter(kr => kr.title.trim() && kr.targetValue)
+    const validKRs = keyResults.filter(kr => kr.title.trim() !== '' && kr.targetValue.trim() !== '')
     if (validKRs.length === 0) {
-      toast.error('Adicione pelo menos 1 Key Result')
+      toast.error('Adicione pelo menos 1 Key Result com titulo e meta preenchidos')
       return
     }
 
