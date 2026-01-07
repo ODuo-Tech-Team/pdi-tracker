@@ -267,3 +267,378 @@ export const WEEKDAY_LABELS: Record<string, string> = {
   sex: 'Sex',
   sab: 'Sáb',
 }
+
+// =====================================================
+// INTRANET TYPES - OKRs
+// =====================================================
+
+export type OKRLevel = 'company' | 'area' | 'head' | 'individual'
+export type OKRStatus = 'draft' | 'pending_validation' | 'approved' | 'rejected' | 'tracking' | 'completed'
+export type AreaType = 'vendas' | 'marketing' | 'tech' | 'operacoes' | 'pessoas' | 'financeiro'
+
+export interface OKRCycle {
+  id: string
+  name: string
+  start_date: string
+  end_date: string
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Objective {
+  id: string
+  cycle_id: string
+  owner_id: string | null
+  parent_objective_id: string | null
+  level: OKRLevel
+  area: AreaType | null
+  title: string
+  description: string | null
+  status: OKRStatus
+  validated_by: string | null
+  validated_at: string | null
+  validation_notes: string | null
+  current_score: number
+  final_score: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface KeyResult {
+  id: string
+  objective_id: string
+  title: string
+  description: string | null
+  metric_type: string
+  start_value: number
+  target_value: number
+  current_value: number
+  unit: string | null
+  current_score: number
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+export interface KRCheckIn {
+  id: string
+  key_result_id: string
+  user_id: string
+  check_in_date: string
+  previous_value: number | null
+  new_value: number
+  score: number
+  notes: string | null
+  blockers: string | null
+  created_at: string
+}
+
+export interface OKRComment {
+  id: string
+  objective_id: string | null
+  key_result_id: string | null
+  user_id: string
+  content: string
+  is_validation_feedback: boolean
+  created_at: string
+}
+
+// Extended OKR types
+export interface ObjectiveWithKRs extends Objective {
+  key_results: KeyResult[]
+  owner?: Profile
+  parent?: Objective
+  children?: ObjectiveWithKRs[]
+}
+
+export interface KeyResultWithCheckIns extends KeyResult {
+  check_ins: KRCheckIn[]
+}
+
+export interface ObjectiveWithDetails extends ObjectiveWithKRs {
+  key_results: KeyResultWithCheckIns[]
+  comments: (OKRComment & { user: Profile })[]
+}
+
+// OKR Labels
+export const OKR_LEVEL_LABELS: Record<OKRLevel, string> = {
+  company: 'Empresa',
+  area: 'Área',
+  head: 'Head',
+  individual: 'Individual',
+}
+
+export const OKR_STATUS_LABELS: Record<OKRStatus, string> = {
+  draft: 'Rascunho',
+  pending_validation: 'Aguardando Validação',
+  approved: 'Aprovado',
+  rejected: 'Rejeitado',
+  tracking: 'Em Acompanhamento',
+  completed: 'Concluído',
+}
+
+export const AREA_LABELS: Record<AreaType, string> = {
+  vendas: 'Vendas',
+  marketing: 'Marketing',
+  tech: 'Tech',
+  operacoes: 'Operações',
+  pessoas: 'Pessoas',
+  financeiro: 'Financeiro',
+}
+
+export const AREA_COLORS: Record<AreaType, string> = {
+  vendas: '#22C55E',
+  marketing: '#3B82F6',
+  tech: '#8B5CF6',
+  operacoes: '#F97316',
+  pessoas: '#EAB308',
+  financeiro: '#EF4444',
+}
+
+// =====================================================
+// INTRANET TYPES - COMUNICADOS
+// =====================================================
+
+export type AnnouncementScope = 'company' | 'department' | 'team'
+export type AnnouncementPriority = 'normal' | 'important' | 'urgent'
+
+export interface AnnouncementCategory {
+  id: string
+  name: string
+  color: string
+  created_at: string
+}
+
+export interface Announcement {
+  id: string
+  author_id: string
+  title: string
+  content: string
+  excerpt: string | null
+  scope: AnnouncementScope
+  priority: AnnouncementPriority
+  department: string | null
+  is_pinned: boolean
+  is_published: boolean
+  published_at: string
+  expires_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AnnouncementRead {
+  announcement_id: string
+  user_id: string
+  read_at: string
+}
+
+export interface AnnouncementWithDetails extends Announcement {
+  author: Profile
+  categories: AnnouncementCategory[]
+  read_count?: number
+  is_read?: boolean
+}
+
+export const ANNOUNCEMENT_SCOPE_LABELS: Record<AnnouncementScope, string> = {
+  company: 'Empresa',
+  department: 'Departamento',
+  team: 'Equipe',
+}
+
+export const ANNOUNCEMENT_PRIORITY_LABELS: Record<AnnouncementPriority, string> = {
+  normal: 'Normal',
+  important: 'Importante',
+  urgent: 'Urgente',
+}
+
+export const ANNOUNCEMENT_PRIORITY_COLORS: Record<AnnouncementPriority, string> = {
+  normal: '#6B7280',
+  important: '#F59E0B',
+  urgent: '#EF4444',
+}
+
+// =====================================================
+// INTRANET TYPES - CALENDARIO/EVENTOS
+// =====================================================
+
+export type EventType = 'meeting' | 'training' | 'holiday' | 'deadline' | 'personal' | 'team' | 'company'
+export type EventVisibility = 'private' | 'team' | 'department' | 'company'
+export type RSVPStatus = 'pending' | 'accepted' | 'declined' | 'maybe'
+
+export interface Event {
+  id: string
+  creator_id: string
+  title: string
+  description: string | null
+  location: string | null
+  event_type: EventType
+  visibility: EventVisibility
+  start_time: string
+  end_time: string
+  all_day: boolean
+  is_recurring: boolean
+  recurrence_rule: string | null
+  color: string
+  department: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventInvitee {
+  id: string
+  event_id: string
+  user_id: string
+  rsvp_status: RSVPStatus
+  responded_at: string | null
+  created_at: string
+}
+
+export interface EventWithDetails extends Event {
+  creator: Profile
+  invitees: (EventInvitee & { user: Profile })[]
+  my_rsvp?: RSVPStatus
+}
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  meeting: 'Reunião',
+  training: 'Treinamento',
+  holiday: 'Feriado',
+  deadline: 'Prazo',
+  personal: 'Pessoal',
+  team: 'Equipe',
+  company: 'Empresa',
+}
+
+export const EVENT_TYPE_COLORS: Record<EventType, string> = {
+  meeting: '#3B82F6',
+  training: '#8B5CF6',
+  holiday: '#22C55E',
+  deadline: '#EF4444',
+  personal: '#6B7280',
+  team: '#F97316',
+  company: '#EC4899',
+}
+
+export const RSVP_STATUS_LABELS: Record<RSVPStatus, string> = {
+  pending: 'Pendente',
+  accepted: 'Confirmado',
+  declined: 'Recusado',
+  maybe: 'Talvez',
+}
+
+// =====================================================
+// INTRANET TYPES - DIRETORIO (Profile Extended)
+// =====================================================
+
+export interface ProfileExtended extends Profile {
+  area: AreaType | null
+  phone: string | null
+  bio: string | null
+  skills: string[]
+  linkedin_url: string | null
+  hire_date: string | null
+  office_location: string | null
+}
+
+export interface DirectoryFilters {
+  search: string
+  department: string | null
+  area: AreaType | null
+  skills: string[]
+}
+
+// =====================================================
+// INTRANET TYPES - BASE DE CONHECIMENTO
+// =====================================================
+
+export type ArticleStatus = 'draft' | 'published' | 'archived'
+
+export interface KBCategory {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  icon: string
+  parent_id: string | null
+  department: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface KBCategoryWithChildren extends KBCategory {
+  children: KBCategoryWithChildren[]
+  article_count?: number
+}
+
+export interface KBArticle {
+  id: string
+  category_id: string | null
+  author_id: string
+  title: string
+  slug: string
+  content: string
+  excerpt: string | null
+  status: ArticleStatus
+  is_featured: boolean
+  department: string | null
+  view_count: number
+  published_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface KBArticleVersion {
+  id: string
+  article_id: string
+  editor_id: string
+  title: string
+  content: string
+  version_number: number
+  change_summary: string | null
+  created_at: string
+}
+
+export interface KBTag {
+  id: string
+  name: string
+  slug: string
+  created_at: string
+}
+
+export interface KBBookmark {
+  article_id: string
+  user_id: string
+  created_at: string
+}
+
+export interface KBArticleWithDetails extends KBArticle {
+  author: Profile
+  category: KBCategory | null
+  tags: KBTag[]
+  is_bookmarked?: boolean
+}
+
+export const ARTICLE_STATUS_LABELS: Record<ArticleStatus, string> = {
+  draft: 'Rascunho',
+  published: 'Publicado',
+  archived: 'Arquivado',
+}
+
+// =====================================================
+// INTRANET TYPES - NOTIFICACOES IN-APP
+// =====================================================
+
+export interface InAppNotification {
+  id: string
+  user_id: string
+  type: string
+  title: string
+  message: string | null
+  link: string | null
+  related_user_id: string | null
+  is_read: boolean
+  created_at: string
+}
