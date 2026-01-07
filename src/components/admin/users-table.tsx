@@ -100,7 +100,7 @@ export function UsersTable({ users: initialUsers, managers, currentUserId }: Use
         .from('profiles')
         .update({
           role,
-          manager_id: managerId || null,
+          manager_id: managerId && managerId !== 'none' ? managerId : null,
           department: department || null,
           position: position || null,
         })
@@ -136,7 +136,7 @@ export function UsersTable({ users: initialUsers, managers, currentUserId }: Use
       .update({
         name,
         role,
-        manager_id: managerId || null,
+        manager_id: managerId && managerId !== 'none' ? managerId : null,
         department: department || null,
         position: position || null,
       })
@@ -346,7 +346,7 @@ export function UsersTable({ users: initialUsers, managers, currentUserId }: Use
                         <SelectValue placeholder="Selecione um gestor" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sem gestor</SelectItem>
+                        <SelectItem value="none">Sem gestor</SelectItem>
                         {managers.map(manager => (
                           <SelectItem key={manager.id} value={manager.id}>
                             {manager.name}
@@ -500,7 +500,7 @@ export function UsersTable({ users: initialUsers, managers, currentUserId }: Use
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sem gestor</SelectItem>
+                        <SelectItem value="none">Sem gestor</SelectItem>
                         {managers.filter(m => m.id !== editingUser.id).map(manager => (
                           <SelectItem key={manager.id} value={manager.id}>
                             {manager.name}

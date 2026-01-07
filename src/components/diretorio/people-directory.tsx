@@ -102,14 +102,14 @@ export function PeopleDirectory({
               </div>
             </div>
             <Select
-              value={selectedDepartment || ''}
-              onValueChange={(v) => setSelectedDepartment(v || null)}
+              value={selectedDepartment || 'all'}
+              onValueChange={(v) => setSelectedDepartment(v === 'all' ? null : v)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Departamento" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {departments.map(dept => (
                   <SelectItem key={dept} value={dept}>
                     {dept}
@@ -118,14 +118,14 @@ export function PeopleDirectory({
               </SelectContent>
             </Select>
             <Select
-              value={selectedPosition || ''}
-              onValueChange={(v) => setSelectedPosition(v || null)}
+              value={selectedPosition || 'all'}
+              onValueChange={(v) => setSelectedPosition(v === 'all' ? null : v)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Cargo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {positions.map(pos => (
                   <SelectItem key={pos} value={pos}>
                     {pos}

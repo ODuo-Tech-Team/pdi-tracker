@@ -230,12 +230,12 @@ export function ArticleForm({ profile, categories, article }: ArticleFormProps) 
 
               <div className="space-y-2">
                 <Label>Visibilidade por Departamento</Label>
-                <Select value={department} onValueChange={setDepartment}>
+                <Select value={department || 'all'} onValueChange={(v) => setDepartment(v === 'all' ? '' : v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Todos (padrao)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os departamentos</SelectItem>
+                    <SelectItem value="all">Todos os departamentos</SelectItem>
                     {Object.entries(DEPARTMENT_LABELS).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         Apenas {label}
