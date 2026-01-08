@@ -178,11 +178,12 @@ export function ConfiguracoesForm({ profile, allUsers }: ConfiguracoesFormProps)
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Selecionar Usuário</Label>
-              <Select value={selectedUser || ''} onValueChange={setSelectedUser}>
+              <Select value={selectedUser || '_none_'} onValueChange={(v) => setSelectedUser(v === '_none_' ? '' : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Escolha um usuário" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="_none_">Selecione um usuario...</SelectItem>
                   {allUsers
                     .filter(u => u.id !== profile?.id)
                     .map((user) => (

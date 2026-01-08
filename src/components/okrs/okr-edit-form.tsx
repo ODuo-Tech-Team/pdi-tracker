@@ -53,7 +53,7 @@ export function OKREditForm({ profile, activeCycle, areaOKRs, objective, keyResu
   const [loading, setLoading] = useState(false)
   const [title, setTitle] = useState(objective.title)
   const [description, setDescription] = useState(objective.description || '')
-  const [parentOKRId, setParentOKRId] = useState(objective.parent_objective_id || '')
+  const [parentOKRId, setParentOKRId] = useState(objective.parent_objective_id || '_none_')
   const [krs, setKrs] = useState<KeyResultInput[]>(
     keyResults.map(kr => ({
       id: kr.id,
@@ -133,7 +133,7 @@ export function OKREditForm({ profile, activeCycle, areaOKRs, objective, keyResu
       const { error: objError } = await supabase
         .from('objectives')
         .update({
-          parent_objective_id: parentOKRId,
+          parent_objective_id: parentOKRId === '_none_' ? null : parentOKRId,
           title: title.trim(),
           description: description.trim() || null,
         })
@@ -219,6 +219,7 @@ export function OKREditForm({ profile, activeCycle, areaOKRs, objective, keyResu
                   <SelectValue placeholder="Selecione o OKR da area" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="_none_">Sem vinculo</SelectItem>
                   {suggestedOKRs.length > 0 && (
                     <>
                       <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
