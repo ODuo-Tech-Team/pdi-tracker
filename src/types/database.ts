@@ -3,7 +3,20 @@ export type GoalStatus = 'not_started' | 'in_progress' | 'completed' | 'overdue'
 export type GoalCategory = 'profissional' | 'pessoal' | 'saude' | 'tecnico'
 export type GoalPriority = 'low' | 'medium' | 'high'
 export type HabitType = 'boolean' | 'counter' | 'time'
-export type NotificationType = 'goal_due_soon' | 'goal_overdue' | 'goal_completed' | 'streak_milestone' | 'team_update' | 'system'
+export type NotificationType =
+  | 'goal_due_soon'
+  | 'goal_overdue'
+  | 'goal_completed'
+  | 'streak_milestone'
+  | 'team_update'
+  | 'system'
+  // OKR notification types
+  | 'okr_approved'
+  | 'okr_rejected'
+  | 'okr_comment'
+  | 'okr_mention'
+  | 'okr_checkin_reminder'
+  | 'okr_goal_achieved'
 
 export interface Profile {
   id: string
@@ -333,6 +346,8 @@ export interface KeyResult {
   updated_at: string
 }
 
+export type ConfidenceLevel = 'green' | 'yellow' | 'red'
+
 export interface KRCheckIn {
   id: string
   key_result_id: string
@@ -341,9 +356,22 @@ export interface KRCheckIn {
   previous_value: number | null
   new_value: number
   score: number
+  confidence: ConfidenceLevel
   notes: string | null
   blockers: string | null
   created_at: string
+}
+
+export const CONFIDENCE_LABELS: Record<ConfidenceLevel, string> = {
+  green: 'No caminho',
+  yellow: 'Em risco',
+  red: 'Fora do caminho',
+}
+
+export const CONFIDENCE_COLORS: Record<ConfidenceLevel, string> = {
+  green: '#22C55E',
+  yellow: '#EAB308',
+  red: '#EF4444',
 }
 
 export interface OKRComment {
@@ -710,6 +738,91 @@ export const KPI_METRIC_TYPE_LABELS: Record<KPIMetricType, string> = {
   percentage: 'Percentual',
   currency: 'Valor (R$)',
   boolean: 'Sim/Nao',
+}
+
+// =====================================================
+// INTRANET TYPES - KPI GOALS (METAS)
+// =====================================================
+
+export type GoalTargetOperator = '>' | '<' | '>=' | '<=' | '='
+export type KPIGoalStatus = 'active' | 'completed' | 'failed' | 'cancelled'
+export type ActionStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
+
+export interface KPIGoal {
+  id: string
+  kpi_id: string
+  title: string
+  description: string | null
+  target_operator: GoalTargetOperator
+  target_value: number
+  deadline: string
+  status: KPIGoalStatus
+  completed_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface KPIGoalWithKPI extends KPIGoal {
+  kpi?: KPI
+  actions?: GoalAction[]
+}
+
+export interface GoalAction {
+  id: string
+  goal_id: string
+  what: string
+  why: string | null
+  where_location: string | null
+  when_date: string | null
+  who: string | null
+  how: string | null
+  how_much: number | null
+  status: ActionStatus
+  completed_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface GoalActionWithAssignee extends GoalAction {
+  assignee?: Profile
+}
+
+export const KPI_GOAL_STATUS_LABELS: Record<KPIGoalStatus, string> = {
+  active: 'Ativa',
+  completed: 'Concluida',
+  failed: 'Nao Atingida',
+  cancelled: 'Cancelada',
+}
+
+export const KPI_GOAL_STATUS_COLORS: Record<KPIGoalStatus, string> = {
+  active: '#3B82F6',
+  completed: '#22C55E',
+  failed: '#EF4444',
+  cancelled: '#6B7280',
+}
+
+export const ACTION_STATUS_LABELS: Record<ActionStatus, string> = {
+  pending: 'Pendente',
+  in_progress: 'Em Andamento',
+  completed: 'Concluida',
+  cancelled: 'Cancelada',
+}
+
+export const ACTION_STATUS_COLORS: Record<ActionStatus, string> = {
+  pending: '#6B7280',
+  in_progress: '#3B82F6',
+  completed: '#22C55E',
+  cancelled: '#EF4444',
+}
+
+export const TARGET_OPERATOR_LABELS: Record<GoalTargetOperator, string> = {
+  '>': 'Maior que',
+  '<': 'Menor que',
+  '>=': 'Maior ou igual',
+  '<=': 'Menor ou igual',
+  '=': 'Igual a',
 }
 
 // =====================================================

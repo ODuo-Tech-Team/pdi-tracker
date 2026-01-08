@@ -26,8 +26,15 @@ import {
   Target,
   TrendingUp,
   Calendar,
+  Circle,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  GitBranch,
+  Download,
 } from 'lucide-react'
 import { OKRCard } from './okr-card'
+import { ExportDialog } from './export-dialog'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -60,6 +67,13 @@ export function OKRDashboard({
     ? companyOKRs.reduce((acc, okr) => acc + okr.current_score, 0) / companyOKRs.length
     : 0
 
+  // Calculate traffic light metrics for all OKRs
+  const allOKRs = [...companyOKRs, ...areaOKRs]
+  const onTrackCount = allOKRs.filter(okr => okr.current_score >= 7).length
+  const atRiskCount = allOKRs.filter(okr => okr.current_score >= 4 && okr.current_score < 7).length
+  const offTrackCount = allOKRs.filter(okr => okr.current_score < 4).length
+  const totalOKRs = allOKRs.length
+
   if (!activeCycle) {
     return (
       <Card>
@@ -77,7 +91,7 @@ export function OKRDashboard({
   return (
     <div className="space-y-6">
       {/* Cycle Info + Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Ciclo Ativo</CardDescription>
@@ -106,26 +120,45 @@ export function OKRDashboard({
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>OKRs Empresa</CardDescription>
-            <CardTitle className="text-xl">{companyOKRs.length}</CardTitle>
+            <CardDescription>Total de OKRs</CardDescription>
+            <CardTitle className="text-xl">{totalOKRs}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 className="h-4 w-4" />
-              <span>Objetivos estrategicos</span>
+              <Target className="h-4 w-4" />
+              <span>{companyOKRs.length} empresa + {areaOKRs.length} areas</span>
             </div>
           </CardContent>
         </Card>
 
+        {/* Traffic Light Summary */}
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>OKRs por Area</CardDescription>
-            <CardTitle className="text-xl">{areaOKRs.length}</CardTitle>
+            <CardDescription>Status dos OKRs</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>6 areas</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Circle className="h-3 w-3 fill-green-500 text-green-500" />
+                  <span className="text-sm">No caminho</span>
+                </div>
+                <span className="text-sm font-medium text-green-600">{onTrackCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Circle className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                  <span className="text-sm">Em risco</span>
+                </div>
+                <span className="text-sm font-medium text-yellow-600">{atRiskCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Circle className="h-3 w-3 fill-red-500 text-red-500" />
+                  <span className="text-sm">Fora do caminho</span>
+                </div>
+                <span className="text-sm font-medium text-red-600">{offTrackCount}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -172,16 +205,39 @@ export function OKRDashboard({
 
       {/* Tabs: Company / Areas */}
       <Tabs defaultValue="company" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="company" className="gap-2">
-            <Building2 className="h-4 w-4" />
-            Empresa
-          </TabsTrigger>
-          <TabsTrigger value="areas" className="gap-2">
-            <Users className="h-4 w-4" />
-            Areas
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="company" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              Empresa
+            </TabsTrigger>
+            <TabsTrigger value="areas" className="gap-2">
+              <Users className="h-4 w-4" />
+              Areas
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/okrs/arvore">
+              <Button variant="outline" size="sm" className="gap-2">
+                <GitBranch className="h-4 w-4" />
+                Ver Arvore
+              </Button>
+            </Link>
+            {activeCycle && (
+              <ExportDialog
+                cycle={activeCycle}
+                objectives={[...companyOKRs, ...areaOKRs]}
+                trigger={
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Exportar
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        </div>
 
         <TabsContent value="company" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">

@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Bell, Check, Target, AlertTriangle, Trophy, Users, Info } from 'lucide-react'
+import { Bell, Check, Target, AlertTriangle, Trophy, Users, Info, ThumbsUp, ThumbsDown, MessageSquare, AtSign, Clock, Star } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
@@ -100,6 +100,19 @@ export function NotificationsBell({ userId }: NotificationsBellProps) {
         return <Trophy className="h-4 w-4 text-orange-500" />
       case 'team_update':
         return <Users className="h-4 w-4 text-blue-500" />
+      // OKR notification types
+      case 'okr_approved':
+        return <ThumbsUp className="h-4 w-4 text-green-500" />
+      case 'okr_rejected':
+        return <ThumbsDown className="h-4 w-4 text-red-500" />
+      case 'okr_comment':
+        return <MessageSquare className="h-4 w-4 text-blue-500" />
+      case 'okr_mention':
+        return <AtSign className="h-4 w-4 text-purple-500" />
+      case 'okr_checkin_reminder':
+        return <Clock className="h-4 w-4 text-yellow-500" />
+      case 'okr_goal_achieved':
+        return <Star className="h-4 w-4 text-yellow-500" />
       default:
         return <Info className="h-4 w-4 text-gray-500" />
     }

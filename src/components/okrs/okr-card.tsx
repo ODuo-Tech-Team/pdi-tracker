@@ -12,7 +12,7 @@ import {
   AreaType,
   OKRStatus,
 } from '@/types/database'
-import { ChevronRight, Target } from 'lucide-react'
+import { ChevronRight, Circle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface OKRCardProps {
@@ -30,15 +30,41 @@ const statusColors: Record<OKRStatus, string> = {
   completed: 'bg-purple-100 text-purple-800',
 }
 
+type TrafficLightStatus = 'on-track' | 'at-risk' | 'off-track'
+
 function getScoreColor(score: number): string {
   if (score >= 7) return 'text-green-600'
   if (score >= 4) return 'text-yellow-600'
   return 'text-red-600'
 }
 
+function getTrafficLightStatus(score: number): TrafficLightStatus {
+  if (score >= 7) return 'on-track'
+  if (score >= 4) return 'at-risk'
+  return 'off-track'
+}
+
+function getTrafficLightColor(status: TrafficLightStatus): string {
+  switch (status) {
+    case 'on-track': return '#22C55E'
+    case 'at-risk': return '#EAB308'
+    case 'off-track': return '#EF4444'
+  }
+}
+
+function getTrafficLightLabel(status: TrafficLightStatus): string {
+  switch (status) {
+    case 'on-track': return 'No caminho'
+    case 'at-risk': return 'Em risco'
+    case 'off-track': return 'Fora do caminho'
+  }
+}
+
 export function OKRCard({ objective, showArea, showDetails }: OKRCardProps) {
   const keyResults = objective.key_results || []
   const progressPercent = objective.current_score * 10
+  const trafficStatus = getTrafficLightStatus(objective.current_score)
+  const trafficColor = getTrafficLightColor(trafficStatus)
 
   return (
     <Link href={`/dashboard/okrs/${objective.id}`}>
@@ -46,18 +72,34 @@ export function OKRCard({ objective, showArea, showDetails }: OKRCardProps) {
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              {showArea && objective.area && (
-                <Badge
-                  variant="outline"
-                  className="mb-2"
+              <div className="flex items-center gap-2 mb-2">
+                {/* Traffic Light Indicator */}
+                <div
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
                   style={{
-                    borderColor: AREA_COLORS[objective.area as AreaType],
-                    color: AREA_COLORS[objective.area as AreaType],
+                    backgroundColor: `${trafficColor}20`,
+                    color: trafficColor,
                   }}
+                  title={getTrafficLightLabel(trafficStatus)}
                 >
-                  {AREA_LABELS[objective.area as AreaType]}
-                </Badge>
-              )}
+                  <Circle
+                    className="h-2.5 w-2.5"
+                    style={{ fill: trafficColor, color: trafficColor }}
+                  />
+                  {getTrafficLightLabel(trafficStatus)}
+                </div>
+                {showArea && objective.area && (
+                  <Badge
+                    variant="outline"
+                    style={{
+                      borderColor: AREA_COLORS[objective.area as AreaType],
+                      color: AREA_COLORS[objective.area as AreaType],
+                    }}
+                  >
+                    {AREA_LABELS[objective.area as AreaType]}
+                  </Badge>
+                )}
+              </div>
               <CardTitle className="text-base font-semibold line-clamp-2">
                 {objective.title}
               </CardTitle>

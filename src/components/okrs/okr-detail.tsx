@@ -22,6 +22,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Profile,
   ObjectiveWithKRs,
   KeyResult,
@@ -32,6 +39,7 @@ import {
   AREA_COLORS,
   AreaType,
   OKRStatus,
+  ConfidenceLevel,
 } from '@/types/database'
 import {
   ArrowLeft,
@@ -45,12 +53,18 @@ import {
   Send,
   TrendingUp,
   Target,
+  AlertTriangle,
+  Circle,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { CheckinTimeline } from './checkin-timeline'
+import { CommentsSection } from './comments-section'
+import { ActivityFeed } from './activity-feed'
+import { AttachmentsSection } from './attachments-section'
+import { Celebration, useCelebration } from './celebration'
+import { logKRCheckIn, logOKRStatusChange } from '@/lib/activity-logger'
 
 interface OKRDetailProps {
   objective: ObjectiveWithKRs & {
@@ -63,6 +77,7 @@ interface OKRDetailProps {
   profile: Profile | null
   canEdit: boolean
   canValidate: boolean
+  teamMembers?: Profile[]
 }
 
 const statusColors: Record<OKRStatus, string> = {
@@ -100,6 +115,7 @@ export function OKRDetail({
   profile,
   canEdit,
   canValidate,
+  teamMembers = [],
 }: OKRDetailProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -107,6 +123,9 @@ export function OKRDetail({
   const [validationNotes, setValidationNotes] = useState('')
   const [checkInValue, setCheckInValue] = useState<Record<string, string>>({})
   const [checkInNotes, setCheckInNotes] = useState<Record<string, string>>({})
+  const [checkInConfidence, setCheckInConfidence] = useState<Record<string, ConfidenceLevel>>({})
+  const [checkInBlockers, setCheckInBlockers] = useState<Record<string, string>>({})
+  const { celebrate, CelebrationComponent } = useCelebration()
 
   const LevelIcon = levelIcons[objective.level]
   const keyResults = objective.key_results || []
@@ -147,6 +166,17 @@ export function OKRDetail({
 
       if (error) throw error
 
+      // Log activity
+      if (profile?.id) {
+        await logOKRStatusChange(
+          objective.id,
+          profile.id,
+          objective.status,
+          approved ? 'tracking' : 'rejected',
+          validationNotes
+        )
+      }
+
       toast.success(approved ? 'OKR aprovado!' : 'OKR rejeitado')
       router.refresh()
     } catch (error) {
@@ -172,7 +202,7 @@ export function OKRDetail({
         : newValue >= kr.target_value ? 1 : 0
       const score = Math.min(10, Math.max(0, progress * 10))
 
-      // Create check-in
+      // Create check-in with confidence and blockers
       const { error: checkInError } = await supabase
         .from('kr_check_ins')
         .insert({
@@ -181,7 +211,9 @@ export function OKRDetail({
           previous_value: kr.current_value,
           new_value: newValue,
           score: Math.round(score * 10) / 10,
+          confidence: checkInConfidence[kr.id] || 'green',
           notes: checkInNotes[kr.id] || null,
+          blockers: checkInBlockers[kr.id] || null,
         })
 
       if (checkInError) throw checkInError
@@ -194,9 +226,30 @@ export function OKRDetail({
 
       if (krError) throw krError
 
+      // Log activity
+      if (profile?.id) {
+        await logKRCheckIn(
+          kr.id,
+          profile.id,
+          kr.current_value,
+          newValue,
+          Math.round(score * 10) / 10,
+          checkInConfidence[kr.id]
+        )
+      }
+
       toast.success('Check-in registrado!')
+
+      // Celebrate if score >= 7 (on track)
+      const finalScore = Math.round(score * 10) / 10
+      if (finalScore >= 7 && kr.current_score < 7) {
+        celebrate('Key Result no Caminho!')
+      }
+
       setCheckInValue({ ...checkInValue, [kr.id]: '' })
       setCheckInNotes({ ...checkInNotes, [kr.id]: '' })
+      setCheckInConfidence({ ...checkInConfidence, [kr.id]: 'green' as ConfidenceLevel })
+      setCheckInBlockers({ ...checkInBlockers, [kr.id]: '' })
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -397,11 +450,14 @@ export function OKRDetail({
                     <TrendingUp className="h-4 w-4" />
                     Registrar Check-in
                   </p>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
+
+                  {/* Valor e Confidence */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Novo Valor</Label>
                       <Input
                         type="number"
-                        placeholder={`Novo valor (${kr.unit || 'valor'})`}
+                        placeholder={`${kr.unit || 'valor'}`}
                         value={checkInValue[kr.id] || ''}
                         onChange={(e) => setCheckInValue({
                           ...checkInValue,
@@ -409,44 +465,90 @@ export function OKRDetail({
                         })}
                       />
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleCheckIn(kr)}
-                      disabled={loading || !checkInValue[kr.id]}
-                    >
-                      Salvar
-                    </Button>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Confianca</Label>
+                      <Select
+                        value={checkInConfidence[kr.id] || 'green'}
+                        onValueChange={(v) => setCheckInConfidence({
+                          ...checkInConfidence,
+                          [kr.id]: v as ConfidenceLevel
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="green">
+                            <div className="flex items-center gap-2">
+                              <Circle className="h-3 w-3 fill-green-500 text-green-500" />
+                              No caminho
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="yellow">
+                            <div className="flex items-center gap-2">
+                              <Circle className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                              Em risco
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="red">
+                            <div className="flex items-center gap-2">
+                              <Circle className="h-3 w-3 fill-red-500 text-red-500" />
+                              Fora do caminho
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <Input
-                    placeholder="Notas (opcional)"
-                    value={checkInNotes[kr.id] || ''}
-                    onChange={(e) => setCheckInNotes({
-                      ...checkInNotes,
-                      [kr.id]: e.target.value
-                    })}
-                  />
+
+                  {/* Notas */}
+                  <div>
+                    <Label className="text-xs text-muted-foreground">O que foi feito? (opcional)</Label>
+                    <Input
+                      placeholder="Descreva o progresso..."
+                      value={checkInNotes[kr.id] || ''}
+                      onChange={(e) => setCheckInNotes({
+                        ...checkInNotes,
+                        [kr.id]: e.target.value
+                      })}
+                    />
+                  </div>
+
+                  {/* Blockers */}
+                  <div>
+                    <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      Bloqueios/Impedimentos (opcional)
+                    </Label>
+                    <Input
+                      placeholder="O que esta impedindo o progresso?"
+                      value={checkInBlockers[kr.id] || ''}
+                      onChange={(e) => setCheckInBlockers({
+                        ...checkInBlockers,
+                        [kr.id]: e.target.value
+                      })}
+                    />
+                  </div>
+
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleCheckIn(kr)}
+                    disabled={loading || !checkInValue[kr.id]}
+                  >
+                    Salvar Check-in
+                  </Button>
                 </div>
               )}
 
-              {/* Check-in History */}
+              {/* Check-in History Timeline */}
               {checkIns[kr.id]?.length > 0 && (
                 <div className="pt-3 border-t">
-                  <p className="text-sm font-medium mb-2">Historico de Check-ins</p>
-                  <div className="space-y-2">
-                    {checkIns[kr.id].slice(0, 3).map((ci) => (
-                      <div key={ci.id} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {format(new Date(ci.check_in_date), "dd/MM/yyyy", { locale: ptBR })}
-                        </span>
-                        <span>
-                          {ci.previous_value?.toLocaleString('pt-BR')} {'->'} {ci.new_value.toLocaleString('pt-BR')}
-                        </span>
-                        <span className={getScoreColor(ci.score)}>
-                          Score: {ci.score.toFixed(1)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <CheckinTimeline
+                    checkIns={checkIns[kr.id]}
+                    unit={kr.unit}
+                    maxInitialItems={3}
+                  />
                 </div>
               )}
             </div>
@@ -501,6 +603,39 @@ export function OKRDetail({
           </CardContent>
         </Card>
       )}
+
+      {/* Attachments Section */}
+      {profile && (
+        <AttachmentsSection
+          entityType="objective"
+          entityId={objective.id}
+          profile={profile}
+        />
+      )}
+
+      {/* Comments and Activity Section */}
+      {profile && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Comments */}
+          <CommentsSection
+            entityType="objective"
+            entityId={objective.id}
+            profile={profile}
+            mentionableUsers={teamMembers}
+          />
+
+          {/* Activity Feed */}
+          <ActivityFeed
+            entityType="objective"
+            entityId={objective.id}
+            maxItems={10}
+            showFilters
+          />
+        </div>
+      )}
+
+      {/* Celebration Animation */}
+      <CelebrationComponent />
     </div>
   )
 }
