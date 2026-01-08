@@ -479,14 +479,14 @@ export function OKRTasksSection({ objectiveId, keyResultId, onProgressUpdate }: 
               <div className="space-y-2">
                 <Label>Responsavel (opcional)</Label>
                 <Select
-                  value={formData.assignee_id}
-                  onValueChange={(v) => setFormData({ ...formData, assignee_id: v })}
+                  value={formData.assignee_id || '_none_'}
+                  onValueChange={(v) => setFormData({ ...formData, assignee_id: v === '_none_' ? '' : v })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="_none_">Nenhum</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}

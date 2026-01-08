@@ -490,14 +490,14 @@ export function ActionsSection({ goalId, isOwner }: ActionsSectionProps) {
               <div className="space-y-2">
                 <Label>Quem? (Who)</Label>
                 <Select
-                  value={formData.who}
-                  onValueChange={(v) => setFormData({ ...formData, who: v })}
+                  value={formData.who || '_none_'}
+                  onValueChange={(v) => setFormData({ ...formData, who: v === '_none_' ? '' : v })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o responsavel" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ninguem atribuido</SelectItem>
+                    <SelectItem value="_none_">Ninguem atribuido</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.name}
