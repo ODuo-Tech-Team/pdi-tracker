@@ -1,10 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   KPIWithValues,
+  Profile,
+  Objective,
   AREA_LABELS,
   AREA_COLORS,
   AreaType,
@@ -14,10 +17,15 @@ import { TrendingUp, TrendingDown, Minus, Target } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { KPISparkline, VariationBadge } from './kpi-sparkline'
 import { KPIDetailModal } from './kpi-detail-modal'
+import { KPIFormDialog } from './kpi-form'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 interface KPICardProps {
   kpi: KPIWithValues
   isOwner: boolean
+  profile?: Profile | null
+  objectives?: Pick<Objective, 'id' | 'title' | 'area'>[]
 }
 
 function formatValue(value: number, metricType: KPIMetricType, unit?: string | null, compact?: boolean): string {
@@ -60,8 +68,47 @@ function getProgressPercent(current: number, target: number | null): number {
   return Math.min(percent, 100)
 }
 
-export function KPICard({ kpi, isOwner }: KPICardProps) {
+export function KPICard({ kpi, isOwner, profile, objectives = [] }: KPICardProps) {
+  const router = useRouter()
+  const supabase = createClient()
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
+
+  const handleEdit = () => {
+    setShowDetailModal(false)
+    setShowEditForm(true)
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Tem certeza que deseja excluir este KPI? Esta acao nao pode ser desfeita.')) {
+      return
+    }
+
+    try {
+      // First delete all related kpi_values
+      const { error: valuesError } = await supabase
+        .from('kpi_values')
+        .delete()
+        .eq('kpi_id', kpi.id)
+
+      if (valuesError) throw valuesError
+
+      // Then delete the KPI itself
+      const { error } = await supabase
+        .from('kpis')
+        .delete()
+        .eq('id', kpi.id)
+
+      if (error) throw error
+
+      toast.success('KPI excluido com sucesso')
+      setShowDetailModal(false)
+      router.refresh()
+    } catch (error) {
+      console.error('Error deleting KPI:', error)
+      toast.error('Erro ao excluir KPI')
+    }
+  }
 
   const trend = getTrend(kpi.values)
   const progressPercent = getProgressPercent(kpi.current_value, kpi.target_value)
@@ -183,6 +230,17 @@ export function KPICard({ kpi, isOwner }: KPICardProps) {
         onOpenChange={setShowDetailModal}
         kpi={kpi}
         isOwner={isOwner}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      {/* Edit Form */}
+      <KPIFormDialog
+        open={showEditForm}
+        onOpenChange={setShowEditForm}
+        profile={profile || null}
+        objectives={objectives}
+        editingKPI={kpi}
       />
     </>
   )

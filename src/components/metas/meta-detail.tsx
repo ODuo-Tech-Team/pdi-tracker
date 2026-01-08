@@ -26,7 +26,14 @@ import {
   Send,
   Loader2,
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { TasksSection } from './tasks-section'
+import { MetaForm } from './meta-form'
 import { format, differenceInDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -46,6 +53,7 @@ export function MetaDetail({ goal: initialGoal, profile }: MetaDetailProps) {
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -212,7 +220,12 @@ export function MetaDetail({ goal: initialGoal, profile }: MetaDetailProps) {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" disabled={loading}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowEditDialog(true)}
+                disabled={loading}
+              >
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button
@@ -373,6 +386,23 @@ export function MetaDetail({ goal: initialGoal, profile }: MetaDetailProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Meta</DialogTitle>
+          </DialogHeader>
+          <MetaForm
+            goal={goal}
+            onSuccess={(updatedGoal) => {
+              setGoal({ ...goal, ...updatedGoal })
+              setShowEditDialog(false)
+            }}
+            onCancel={() => setShowEditDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

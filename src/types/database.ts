@@ -938,3 +938,44 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   approved: 'aprovou',
   rejected: 'rejeitou',
 }
+
+// =====================================================
+// OKR TYPES - TASKS (TAREFAS DE OKRs)
+// =====================================================
+
+export type OKRTaskPriority = 'low' | 'medium' | 'high'
+
+export interface OKRTask {
+  id: string
+  objective_id: string | null
+  key_result_id: string | null
+  title: string
+  description: string | null
+  is_completed: boolean
+  completed_at: string | null
+  completed_by: string | null
+  priority: OKRTaskPriority
+  sort_order: number
+  assignee_id: string | null
+  due_date: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OKRTaskWithAssignee extends OKRTask {
+  assignee?: Profile
+  completed_by_user?: Profile
+}
+
+export const OKR_TASK_PRIORITY_LABELS: Record<OKRTaskPriority, string> = {
+  low: 'Baixa',
+  medium: 'Media',
+  high: 'Alta',
+}
+
+export const OKR_TASK_PRIORITY_COLORS: Record<OKRTaskPriority, string> = {
+  low: '#6B7280',
+  medium: '#F59E0B',
+  high: '#EF4444',
+}

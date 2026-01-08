@@ -55,6 +55,7 @@ import {
   Target,
   AlertTriangle,
   Circle,
+  Trash2,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -63,6 +64,7 @@ import { CheckinTimeline } from './checkin-timeline'
 import { CommentsSection } from './comments-section'
 import { ActivityFeed } from './activity-feed'
 import { AttachmentsSection } from './attachments-section'
+import { OKRTasksSection } from './okr-tasks-section'
 import { Celebration, useCelebration } from './celebration'
 import { logKRCheckIn, logOKRStatusChange } from '@/lib/activity-logger'
 
@@ -259,6 +261,52 @@ export function OKRDetail({
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm('Tem certeza que deseja excluir este OKR? Esta acao nao pode ser desfeita. Todos os Key Results, check-ins e tarefas associados serao excluidos.')) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      // First delete related data (they cascade, but let's be explicit)
+      // Delete check-ins for each KR
+      for (const kr of keyResults) {
+        await supabase.from('kr_check_ins').delete().eq('key_result_id', kr.id)
+      }
+
+      // Delete key results
+      await supabase.from('key_results').delete().eq('objective_id', objective.id)
+
+      // Delete OKR tasks
+      await supabase.from('okr_tasks').delete().eq('objective_id', objective.id)
+
+      // Delete comments
+      await supabase.from('okr_comments').delete().eq('objective_id', objective.id)
+
+      // Delete attachments
+      await supabase.from('okr_attachments').delete().eq('entity_id', objective.id)
+
+      // Delete activities
+      await supabase.from('activities').delete().eq('entity_id', objective.id)
+
+      // Finally delete the objective
+      const { error } = await supabase
+        .from('objectives')
+        .delete()
+        .eq('id', objective.id)
+
+      if (error) throw error
+
+      toast.success('OKR excluido com sucesso')
+      router.push('/dashboard/okrs')
+    } catch (error) {
+      console.error('Error deleting OKR:', error)
+      toast.error('Erro ao excluir OKR')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Back Button */}
@@ -337,7 +385,7 @@ export function OKRDetail({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {canEdit && objective.status === 'draft' && (
               <>
                 <Link href={`/dashboard/okrs/${objective.id}/editar`}>
@@ -349,6 +397,15 @@ export function OKRDetail({
                 <Button size="sm" onClick={handleSubmitForValidation} disabled={loading}>
                   <Send className="h-4 w-4 mr-2" />
                   Enviar para Validacao
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={loading}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir
                 </Button>
               </>
             )}
@@ -561,6 +618,9 @@ export function OKRDetail({
           )}
         </CardContent>
       </Card>
+
+      {/* Tasks Section */}
+      <OKRTasksSection objectiveId={objective.id} />
 
       {/* Child Objectives (for Company/Area) */}
       {childObjectives.length > 0 && (

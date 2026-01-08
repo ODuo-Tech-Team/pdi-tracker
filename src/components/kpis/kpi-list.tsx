@@ -90,7 +90,7 @@ export function KPIList({ kpis, profile, objectives }: KPIListProps) {
           <h2 className="text-lg font-semibold">Meus KPIs</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {myKPIs.map((kpi) => (
-              <KPICard key={kpi.id} kpi={kpi} isOwner={true} />
+              <KPICard key={kpi.id} kpi={kpi} isOwner={true} profile={profile} objectives={objectives} />
             ))}
           </div>
         </div>
@@ -102,7 +102,7 @@ export function KPIList({ kpis, profile, objectives }: KPIListProps) {
           <h2 className="text-lg font-semibold">KPIs da Area</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {areaKPIs.map((kpi) => (
-              <KPICard key={kpi.id} kpi={kpi} isOwner={false} />
+              <KPICard key={kpi.id} kpi={kpi} isOwner={false} profile={profile} objectives={objectives} />
             ))}
           </div>
         </div>

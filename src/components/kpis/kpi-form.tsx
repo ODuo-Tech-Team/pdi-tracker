@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Dialog,
@@ -24,6 +24,7 @@ import {
 import {
   Profile,
   Objective,
+  KPI,
   AREA_LABELS,
   AreaType,
   KPI_FREQUENCY_LABELS,
@@ -39,21 +40,38 @@ interface KPIFormDialogProps {
   onOpenChange: (open: boolean) => void
   profile: Profile | null
   objectives: Pick<Objective, 'id' | 'title' | 'area'>[]
+  editingKPI?: KPI | null
 }
 
-export function KPIFormDialog({ open, onOpenChange, profile, objectives }: KPIFormDialogProps) {
+export function KPIFormDialog({ open, onOpenChange, profile, objectives, editingKPI }: KPIFormDialogProps) {
   const router = useRouter()
   const supabase = createClient()
 
   const [loading, setLoading] = useState(false)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [area, setArea] = useState<string>(profile?.area || '')
-  const [metricType, setMetricType] = useState<KPIMetricType>('number')
-  const [unit, setUnit] = useState('')
-  const [targetValue, setTargetValue] = useState('')
-  const [frequency, setFrequency] = useState<KPIFrequency>('weekly')
-  const [linkedObjectiveId, setLinkedObjectiveId] = useState('')
+  const [title, setTitle] = useState(editingKPI?.title || '')
+  const [description, setDescription] = useState(editingKPI?.description || '')
+  const [area, setArea] = useState<string>(editingKPI?.area || profile?.area || '')
+  const [metricType, setMetricType] = useState<KPIMetricType>((editingKPI?.metric_type as KPIMetricType) || 'number')
+  const [unit, setUnit] = useState(editingKPI?.unit || '')
+  const [targetValue, setTargetValue] = useState(editingKPI?.target_value?.toString() || '')
+  const [frequency, setFrequency] = useState<KPIFrequency>((editingKPI?.frequency as KPIFrequency) || 'weekly')
+  const [linkedObjectiveId, setLinkedObjectiveId] = useState(editingKPI?.linked_objective_id || '')
+
+  // Update form when editingKPI changes
+  useEffect(() => {
+    if (editingKPI) {
+      setTitle(editingKPI.title || '')
+      setDescription(editingKPI.description || '')
+      setArea(editingKPI.area || profile?.area || '')
+      setMetricType((editingKPI.metric_type as KPIMetricType) || 'number')
+      setUnit(editingKPI.unit || '')
+      setTargetValue(editingKPI.target_value?.toString() || '')
+      setFrequency((editingKPI.frequency as KPIFrequency) || 'weekly')
+      setLinkedObjectiveId(editingKPI.linked_objective_id || '')
+    } else {
+      resetForm()
+    }
+  }, [editingKPI])
 
   const resetForm = () => {
     setTitle('')
@@ -77,31 +95,47 @@ export function KPIFormDialog({ open, onOpenChange, profile, objectives }: KPIFo
     setLoading(true)
 
     try {
-      const { error } = await supabase
-        .from('kpis')
-        .insert({
-          title: title.trim(),
-          description: description.trim() || null,
-          owner_id: profile?.id,
-          area: area || null,
-          metric_type: metricType,
-          unit: unit.trim() || null,
-          target_value: targetValue ? parseFloat(targetValue) : null,
-          current_value: 0,
-          frequency,
-          linked_objective_id: linkedObjectiveId && linkedObjectiveId !== 'none' ? linkedObjectiveId : null,
-          is_active: true,
-        })
+      const kpiData = {
+        title: title.trim(),
+        description: description.trim() || null,
+        area: area || null,
+        metric_type: metricType,
+        unit: unit.trim() || null,
+        target_value: targetValue ? parseFloat(targetValue) : null,
+        frequency,
+        linked_objective_id: linkedObjectiveId && linkedObjectiveId !== 'none' ? linkedObjectiveId : null,
+      }
 
-      if (error) throw error
+      if (editingKPI) {
+        // Update existing KPI
+        const { error } = await supabase
+          .from('kpis')
+          .update(kpiData)
+          .eq('id', editingKPI.id)
 
-      toast.success('KPI criado com sucesso!')
+        if (error) throw error
+        toast.success('KPI atualizado com sucesso!')
+      } else {
+        // Create new KPI
+        const { error } = await supabase
+          .from('kpis')
+          .insert({
+            ...kpiData,
+            owner_id: profile?.id,
+            current_value: 0,
+            is_active: true,
+          })
+
+        if (error) throw error
+        toast.success('KPI criado com sucesso!')
+      }
+
       resetForm()
       onOpenChange(false)
       router.refresh()
     } catch (error) {
-      console.error('Error creating KPI:', error)
-      toast.error('Erro ao criar KPI')
+      console.error('Error saving KPI:', error)
+      toast.error(editingKPI ? 'Erro ao atualizar KPI' : 'Erro ao criar KPI')
     } finally {
       setLoading(false)
     }
@@ -116,9 +150,11 @@ export function KPIFormDialog({ open, onOpenChange, profile, objectives }: KPIFo
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Novo KPI</DialogTitle>
+            <DialogTitle>{editingKPI ? 'Editar KPI' : 'Novo KPI'}</DialogTitle>
             <DialogDescription>
-              Crie um indicador de performance para acompanhar seus resultados
+              {editingKPI
+                ? 'Atualize as informacoes do indicador de performance'
+                : 'Crie um indicador de performance para acompanhar seus resultados'}
             </DialogDescription>
           </DialogHeader>
 
@@ -261,7 +297,7 @@ export function KPIFormDialog({ open, onOpenChange, profile, objectives }: KPIFo
               Cancelar
             </Button>
             <Button type="submit" className="bg-[#F58300] hover:bg-[#e07600]" disabled={loading}>
-              {loading ? 'Criando...' : 'Criar KPI'}
+              {loading ? 'Salvando...' : editingKPI ? 'Atualizar' : 'Criar KPI'}
             </Button>
           </DialogFooter>
         </form>

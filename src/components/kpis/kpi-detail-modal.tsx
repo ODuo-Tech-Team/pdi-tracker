@@ -35,7 +35,16 @@ import {
   BarChart3,
   Info,
   Flag,
+  Edit2,
+  Trash2,
+  MoreVertical,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -47,6 +56,8 @@ interface KPIDetailModalProps {
   onOpenChange: (open: boolean) => void
   kpi: KPIWithValues
   isOwner: boolean
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
 function formatValue(value: number, metricType: KPIMetricType, unit?: string | null): string {
@@ -71,7 +82,7 @@ function getTrend(values: { value: number }[]): 'up' | 'down' | 'stable' {
   return 'stable'
 }
 
-export function KPIDetailModal({ open, onOpenChange, kpi, isOwner }: KPIDetailModalProps) {
+export function KPIDetailModal({ open, onOpenChange, kpi, isOwner, onEdit, onDelete }: KPIDetailModalProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -179,8 +190,30 @@ export function KPIDetailModal({ open, onOpenChange, kpi, isOwner }: KPIDetailMo
                 <p className="text-sm text-muted-foreground mt-1">{kpi.description}</p>
               )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <TrendIcon className={cn('h-5 w-5', trendColor)} />
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onEdit}>
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Editar KPI
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={onDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir KPI
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </DialogHeader>
