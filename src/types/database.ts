@@ -826,6 +826,57 @@ export const TARGET_OPERATOR_LABELS: Record<GoalTargetOperator, string> = {
 }
 
 // =====================================================
+// PDI TYPES - GOAL TASKS (ATIVIDADES DE METAS)
+// =====================================================
+
+export type TaskRecurrenceType = 'daily' | 'weekly' | 'monthly'
+
+export interface GoalTask {
+  id: string
+  goal_id: string
+  title: string
+  description: string | null
+  is_recurring: boolean
+  recurrence_type: TaskRecurrenceType | null
+  recurrence_days: number[] | null
+  is_completed: boolean
+  completed_at: string | null
+  weight: number
+  sort_order: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface GoalTaskCompletion {
+  id: string
+  task_id: string
+  completed_at: string
+  notes: string | null
+  created_by: string | null
+}
+
+export interface GoalTaskWithCompletions extends GoalTask {
+  completions?: GoalTaskCompletion[]
+}
+
+export const TASK_RECURRENCE_LABELS: Record<TaskRecurrenceType, string> = {
+  daily: 'Diaria',
+  weekly: 'Semanal',
+  monthly: 'Mensal',
+}
+
+export const WEEKDAY_INDEX_LABELS: Record<number, string> = {
+  0: 'Dom',
+  1: 'Seg',
+  2: 'Ter',
+  3: 'Qua',
+  4: 'Qui',
+  5: 'Sex',
+  6: 'Sab',
+}
+
+// =====================================================
 // INTRANET TYPES - COMENTARIOS E ANEXOS GENERICOS
 // =====================================================
 

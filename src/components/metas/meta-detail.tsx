@@ -20,13 +20,13 @@ import {
 import {
   ArrowLeft,
   Calendar,
-  Target,
   MessageSquare,
   Pencil,
   Trash2,
   Send,
   Loader2,
 } from 'lucide-react'
+import { TasksSection } from './tasks-section'
 import { format, differenceInDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -292,6 +292,16 @@ export function MetaDetail({ goal: initialGoal, profile }: MetaDetailProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tasks Section */}
+      <TasksSection
+        goalId={goal.id}
+        onProgressUpdate={(newProgress) => {
+          if (newProgress !== goal.progress) {
+            setGoal({ ...goal, progress: newProgress })
+          }
+        }}
+      />
 
       {/* Comments Section */}
       <Card className="border-0 shadow-sm">
